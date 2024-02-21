@@ -1,5 +1,3 @@
-import React from 'react';
-
-export default function logIn() {
+export const logIn = (): JSX.Element => {
   return <div>logIn</div>;
-}
+};
