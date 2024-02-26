@@ -253,6 +253,11 @@ export function getObjValue(obj = {}, _path = '', opts = { split: true }): any {
   }, obj);
 }
 
+interface Itest {
+  [index: number]: string;
+  length: number;
+}
+
 /**
  * Set the value of the path in an Object
  *
@@ -265,17 +270,21 @@ export function getObjValue(obj = {}, _path = '', opts = { split: true }): any {
  */
 export function setObjValue(
   obj = {},
-  _path: Array<any> | string = [],
+  _path: Array<string> | string = [],
   val = undefined,
   opts = { split: true }
 ) {
   // Do not alter if already the proper type
-  let path = !Array.isArray(_path) ? undefined : _path;
+  let path: Itest = !Array.isArray(_path)
+    ? opts.split
+      ? _path.toString().split('.')
+      : [_path.toString()]
+    : _path;
 
-  if (path === undefined) {
-    // Convert to an array
-    path = opts.split ? _path.toString().split('.') : [_path.toString()];
-  }
+  // if (path === undefined) {
+  //   // Convert to an array
+  //   path = ;
+  // }
 
   if (!path.length) {
     // Edge case: No path length. Just return
@@ -283,7 +292,7 @@ export function setObjValue(
   }
   if (path.length === 1) {
     // When there is no more depth to recurse, assign the value
-    obj[path] = val;
+    obj[path[0]] = val;
     return obj;
   }
 
