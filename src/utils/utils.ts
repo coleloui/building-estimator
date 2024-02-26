@@ -1,5 +1,17 @@
 import _slugify from 'slugify';
 
+interface IPath {
+  [index: number]: string;
+  length: number;
+  shift: Function;
+  join: Function;
+  reduce: Function;
+}
+
+interface IObj {
+  [key: string]: any;
+}
+
 /**
  * Casts a value to a specific variable type
  *
@@ -239,7 +251,7 @@ export function getObjValue(obj = {}, _path = '', opts = { split: true }): any {
   if (obj === undefined) return undefined;
 
   // Do not alter if already the proper type
-  let path = !Array.isArray(_path)
+  let path: IPath = !Array.isArray(_path)
     ? opts.split
       ? _path.toString().split('.')
       : [_path.toString()]
@@ -247,15 +259,10 @@ export function getObjValue(obj = {}, _path = '', opts = { split: true }): any {
 
   // If the prop does not exist, return undefined
   // Otherwise, return the value
-  return path.reduce((val, part) => {
+  return path.reduce((val: any, part: any) => {
     if (val?.[part] === undefined) return undefined;
     return val[part];
   }, obj);
-}
-
-interface Itest {
-  [index: number]: string;
-  length: number;
 }
 
 /**
@@ -269,22 +276,17 @@ interface Itest {
  * @returns {object}
  */
 export function setObjValue(
-  obj = {},
-  _path: Array<string> | string = [],
-  val = undefined,
+  obj: IObj = {},
+  _path: string = '',
+  val: any,
   opts = { split: true }
-) {
+): object {
   // Do not alter if already the proper type
-  let path: Itest = !Array.isArray(_path)
+  let path: IPath = !Array.isArray(_path)
     ? opts.split
       ? _path.toString().split('.')
       : [_path.toString()]
     : _path;
-
-  // if (path === undefined) {
-  //   // Convert to an array
-  //   path = ;
-  // }
 
   if (!path.length) {
     // Edge case: No path length. Just return
@@ -297,28 +299,13 @@ export function setObjValue(
   }
 
   // Get the prop
-  const field = path.shift();
+  const field: string = path.shift();
 
-  if (field.includes('[')) {
-    // Array, not an Object
-    const [shortField, key] = field.match(/\w+\b/g);
+  // If the prop does not exist, create it
+  if (!Object.prototype.hasOwnProperty.call(obj, field)) obj[field] = {};
 
-    // If the prop does not exist, create it
-    if (!Object.prototype.hasOwnProperty.call(obj, shortField))
-      obj[shortField] = [];
-
-    // Instantiate the array index, if required
-    if (!obj[shortField][key || 0]) obj[shortField][key || 0] = {};
-
-    // Recurse
-    obj[shortField][key] = setObjValue(obj[shortField][key], path, val);
-  } else {
-    // If the prop does not exist, create it
-    if (!Object.prototype.hasOwnProperty.call(obj, field)) obj[field] = {};
-
-    // Recurse
-    obj[field] = setObjValue(obj[field], path, val);
-  }
+  // Recurse
+  obj[field] = setObjValue(obj[field], path.join('.'), val);
 
   return obj;
 }
